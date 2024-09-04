@@ -1,14 +1,19 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from 'expo-router';
 import { Colors } from './../../../constants/Colors';
 import { useRouter } from 'expo-router'
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import {auth} from './../../../configs/FirebaseConfig';
 
 export default function SignIn() {
     const navigation = useNavigation();
 
     const router = useRouter();
+
+    const [email,setEmail] = useState();
+    const [password,setPassword] = useState();
 
     useEffect(() => {
         navigation.setOptions({
@@ -20,9 +25,32 @@ export default function SignIn() {
         // Implement Google Sign-In functionality here
     };
 
+    const signIn = () => {
+
+        if(!email || !password){
+            alert('Please fill in all fields');
+            return;
+        }
+
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                router.replace('/mytrip');
+                // ...
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                if(errorCode=='auth/invalid-credential'){
+                    alert('Invalid email or password');
+                }
+            });
+    }
+
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={()=>router.back()
+            <TouchableOpacity onPress={() => router.back()
             }>
                 <AntDesign name="back" size={24} color="black" />
             </TouchableOpacity>
@@ -31,24 +59,26 @@ export default function SignIn() {
 
             <View style={styles.inputContainer}>
                 <Text style={styles.label}>Email:</Text>
-                <TextInput 
-                    style={styles.input} 
+                <TextInput
+                    style={styles.input}
                     placeholder='Enter Email'
                     placeholderTextColor={Colors.GRAY}
+                    onChangeText={(value) => setEmail(value)}
                 />
             </View>
 
             <View style={styles.inputContainer}>
                 <Text style={styles.label}>Password:</Text>
-                <TextInput 
-                    style={styles.input} 
+                <TextInput
+                    style={styles.input}
                     placeholder='Enter Password'
                     placeholderTextColor={Colors.GRAY}
                     secureTextEntry
+                    onChangeText={(value) => setPassword(value)}
                 />
             </View>
 
-            <TouchableOpacity style={styles.signInButton}>
+            <TouchableOpacity style={styles.signInButton} onPress={signIn}>
                 <Text style={styles.signInButtonText}>Sign In</Text>
             </TouchableOpacity>
 
@@ -60,7 +90,7 @@ export default function SignIn() {
                 <Text style={styles.googleButtonText}>Sign In with Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.signUpContainer}  onPress={()=>router.replace('auth/sign-up')}>
+            <TouchableOpacity style={styles.signUpContainer} onPress={() => router.replace('auth/sign-up')}>
                 <Text style={styles.signUpText}>New User? </Text>
                 <Text style={[styles.signUpText, styles.signUpLink]}>Sign Up</Text>
             </TouchableOpacity>

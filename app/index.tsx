@@ -1,22 +1,23 @@
-import { useFonts } from "expo-font";
+
 import { Text, View } from "react-native";
 import Login from './../components/Login'
+import {auth} from './../configs/FirebaseConfig'
+import { Redirect } from "expo-router"; // Import Link
 
 export default function Index() {
-
-  useFonts({
-    'outfit-bold': require('./../assets/fonts/Outfit-Bold.ttf'),
-    'outfit-medium': require('./../assets/fonts/Outfit-Medium.ttf'),
-    'outfit-regular': require('./../assets/fonts/Outfit-Regular.ttf')
-  })
-
+    
+ 
+  const user = auth.currentUser;
   return (
     <View
       style={{
         flex: 1,
       }}
-    >
-      <Login/>
+    > 
+      {user ?
+        <Redirect href={'./(tabs)/mytrip'}  /> :  
+        <Login />
+      }
     </View>
   );
 }

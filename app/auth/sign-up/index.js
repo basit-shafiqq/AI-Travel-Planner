@@ -1,12 +1,18 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import React, { useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ToastAndroid } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from './../../../constants/Colors';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {auth} from './../../../configs/FirebaseConfig';
 
 export default function SignUp() {
     const navigation = useNavigation();
     const router = useRouter();
+
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+    const [name, setName] = useState();
 
     useEffect(() => {
         navigation.setOptions({
@@ -14,13 +20,32 @@ export default function SignUp() {
         });
     }, []);
 
-    const handleGoogleSignUp = () => {
-        // Implement Google Sign-Up functionality here
+    const signUpWithEmailAndPassword = () => {
+        if (email == null || password == null || name == null) {
+            alert('Please fill in all fields');
+            return;
+        }
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed up 
+                const user = userCredential.user;
+                console.log(user);
+                router.replace('/mytrip');
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.log(errorMessage, errorCode);
+            });
     };
+
+    const singUpWithGoogle=()=>{
+
+    }
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={()=>router.back()}>
+            <TouchableOpacity onPress={() => router.back()}>
                 <AntDesign name="back" size={24} color="black" />
             </TouchableOpacity>
 
@@ -33,6 +58,7 @@ export default function SignUp() {
                     style={styles.input}
                     placeholder='Enter Username'
                     placeholderTextColor={Colors.GRAY}
+                    onChangeText={(value) => setName(value)}
                 />
             </View>
 
@@ -42,6 +68,7 @@ export default function SignUp() {
                     style={styles.input}
                     placeholder='Enter Email'
                     placeholderTextColor={Colors.GRAY}
+                    onChangeText={(value) => setEmail(value)}
                 />
             </View>
 
@@ -52,14 +79,15 @@ export default function SignUp() {
                     placeholder='Enter Password'
                     placeholderTextColor={Colors.GRAY}
                     secureTextEntry
+                    onChangeText={(value) => setPassword(value)}
                 />
             </View>
 
-            <TouchableOpacity style={styles.signUpButton}>
+            <TouchableOpacity style={styles.signUpButton} onPress={signUpWithEmailAndPassword}>
                 <Text style={styles.signUpButtonText}>Sign Up</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignUp}>
+            <TouchableOpacity style={styles.googleButton} onPress={singUpWithGoogle}>
                 <Image
                     // source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png' }}
                     style={styles.googleIcon}
@@ -74,7 +102,6 @@ export default function SignUp() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         backgroundColor: Colors.WHITE,
